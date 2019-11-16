@@ -1,8 +1,12 @@
-# pico-8
+# PICO 8
 
-Run it
+## Awesome pico
 
-In MacOS
+https://github.com/pico-8/awesome-PICO-8
+
+## Setup notes in MacOS
+
+Make an alias
 
 ```bash
 alias p8='/Applications/PICO-8.app/Contents/MacOS/pico8'
