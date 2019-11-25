@@ -9,7 +9,7 @@ https://github.com/pico-8/awesome-PICO-8
 Make an alias
 
 ```bash
-alias p8='/Applications/PICO-8.app/Contents/MacOS/pico8'
+alias pico8='/Applications/PICO-8.app/Contents/MacOS/pico8'
 ```
 
 ## Guides
