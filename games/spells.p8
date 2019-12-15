@@ -17,12 +17,12 @@ player = {
 }
 classes = { "paladin", "warlock", "rogue" }
 spells = {
-  { lvl=1, name="bless", prepared=false, casted=0 },
-  { lvl=1, name="ceremony", prepared=false, casted=0 },
-  { lvl=1, name="command", prepared=false, casted=0 },
-  { lvl=1, name="compelled duel", prepared=false, casted=0 },
-  { lvl=1, name="cure wounds", prepared=false, casted=0 },
-  { lvl=2, name="aid", prepared=false, casted=0 }
+  { lvl=1, name="bless", prepared=false, casted=0, fav=false },
+  { lvl=1, name="ceremony", prepared=false, casted=0, fav=false },
+  { lvl=1, name="command", prepared=false, casted=0, fav=false },
+  { lvl=1, name="compelled duel", prepared=false, casted=0, fav=false },
+  { lvl=1, name="cure wounds", prepared=false, casted=0, fav=false },
+  { lvl=2, name="aid", prepared=false, casted=0, fav=false }
 }
 
 -- main screen module
@@ -126,21 +126,32 @@ function draw_sl()
     if (spell.prepared) then
       col = 8
     end
-    print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, col)
+    if (spell.fav) then
+      print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, 10)
+    else
+      print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, 7)
+    end
     print(spell.lvl, 8, y+2, col)
     if (spells[spells_list.selected] == spell) then
-      print(">", 2, y + 2, rnd(15))
+      print(">", 2, y + 2, 7)
       tooltip_y = y
     end
   end
   if (tooltip) then
+    update_tooltip(spells[spells_list.selected])
     draw_tooltip(tooltip_y)
   end
 end
 
+function update_tooltip(spell)
+  if (btnp(5)) then
+    spell.fav = not spell.fav
+  end
+end
+
 function draw_tooltip(y)
-  rectfill(15, y+10, 63, y+28 , 6)
-  rectfill(14, y+9, 62, y+27 , 7)
+  rectfill(15,y+10,63,y+28,13)
+  rectfill(14,y+9,62,y+27,7)
   print("\146 favourite", 15, y+10, 0)
   print("\143 prepare", 15, y+16, 0)
   print("\152 details", 15, y+22, 0)
