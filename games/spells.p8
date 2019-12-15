@@ -2,14 +2,30 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 
-classes = { 'paladin', 'warlock', 'rogue' }
-spells = {
-  { lvl=1, name="bless", prepared=false },
-  { lvl=1, name="ceremony", prepared=false },
-  { lvl=1, name="command", prepared=false },
-  { lvl=1, name="compelled duel", prepared=false },
-  { lvl=1, name="cure wounds", prepared=false }
+-- utils
+
+function rep(s, n)
+  return n > 0 and s .. rep(s, n-1) or ""
+end
+
+-- input
+
+player = {
+  class="",
+  spell_slots = 6,
+  spell_slots_used = 0
 }
+classes = { "paladin", "warlock", "rogue" }
+spells = {
+  { lvl=1, name="bless", prepared=false, casted=0 },
+  { lvl=1, name="ceremony", prepared=false, casted=0 },
+  { lvl=1, name="command", prepared=false, casted=0 },
+  { lvl=1, name="compelled duel", prepared=false, casted=0 },
+  { lvl=1, name="cure wounds", prepared=false, casted=0 },
+  { lvl=2, name="aid", prepared=false, casted=0 }
+}
+
+-- main screen module
 
 function _paladin(x,y)
   spr( 0, x+0, y+0)
@@ -69,12 +85,15 @@ function main_screen_update()
   if (main_screen.selected > #classes) main_screen.selected = #classes
   if (main_screen.selected == 0) main_screen.selected = 1
   
-  if (btnp(5)) ux.selected_screen = ux.selected_screen + 1
+  if (btnp(5)) then
+    next_screen()
+    player.class = classes[main_screen.selected]
+  end
 end
 
 function main_screen_draw()
-  _x =(128/2) - 16
-  _y =(128/2) - 16
+  _x = (128/2) - 16
+  _y = (128/2) - 16
   if (classes[main_screen.selected] == 'paladin') then
     _paladin(_x,_y)
   end
@@ -94,59 +113,103 @@ main_screen = {
   update = main_screen_update
 }
 
+-- spells module
 
+tooltip = false
 
 function draw_sl()
-  print('lvl name', 2, 2, 7)
   y=0
+  tooltip_y = 0
   for key, spell in pairs(spells) do
-    y = y + 8
-    
-    if (spells[selected_spell] == spell) print(">", 2, y + 2, 7)
-    
-    if spell.prepared then
-      print(spell.name, 6 + 8, y + 2, 8)
-      print(spell.lvl, 8, y + 2, 8)
-    else
-      print(spell.name, 6 + 8, y + 2, 7)
-      print(spell.lvl, 8, y + 2, 7)
+    y = y+8
+    col = 7
+    if (spell.prepared) then
+      col = 8
     end
-    
+    print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, col)
+    print(spell.lvl, 8, y+2, col)
+    if (spells[spells_list.selected] == spell) then
+      print(">", 2, y + 2, rnd(15))
+      tooltip_y = y
+    end
+  end
+  if (tooltip) then
+    draw_tooltip(tooltip_y)
   end
 end
 
-function update_sl()
-  if (btnp(2)) selected_spell = selected_spell - 1
-  if (btnp(3)) selected_spell = selected_spell + 1
-  if (btnp(5)) spells[selected_spell].prepared = not spells[selected_spell].prepared
+function draw_tooltip(y)
+  rectfill(15, y+10, 63, y+28 , 6)
+  rectfill(14, y+9, 62, y+27 , 7)
+  print("\146 favourite", 15, y+10, 0)
+  print("\143 prepare", 15, y+16, 0)
+  print("\152 details", 15, y+22, 0)
 end
-selected_spell = 1
-spells_list = {
+
+function update_sl()
+  if (btnp(0)) then
+    spells[spells_list.selected].casted = spells[spells_list.selected].casted - 1
+    player.spell_slots = player.spell_slots_used - 1
+  end
   
+  if (btnp(1)) then
+    spells[spells_list.selected].casted = spells[spells_list.selected].casted + 1
+    player.spell_slots_used = player.spell_slots_used + 1
+  end
+
+  if (btnp(2)) spells_list.selected = spells_list.selected - 1
+  if (btnp(3)) spells_list.selected = spells_list.selected + 1
+
+  if (btnp(4)) then
+    tooltip = false
+  end
+  if (btnp(5)) then
+    --spells[spells_list.selected].prepared = not spells[spells_list.selected].prepared
+    tooltip = true
+  end
+end
+
+spells_list = {
+  selected = 1,
   draw = draw_sl,
   update = update_sl
 }
 
+function draw_detail()
+  cls(0)
+end
+function update_sd()
 
+end
 
--- spells
-
-
-ux = {
-  selected_screen = 1
+spell_detail = {
+  draw = draw_detail,
+  update = update_sd
 }
+
+-- main game loop module
+
 screens = {
+  selected = 1,
   main_screen,
-  spells_list
+  spells_list,
+  spell_detail
 }
+function next_screen()
+  screens.selected = screens.selected + 1
+end
+
+function _init()
+  cls(0)
+end
 
 function _update()  
-  screens[ux.selected_screen].update()
+  screens[screens.selected].update()
 end
 
 function _draw()
-  cls(1)
-  screens[ux.selected_screen].draw()
+  cls(0)
+  screens[screens.selected].draw()
 end
 
 __gfx__
