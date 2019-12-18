@@ -96,69 +96,39 @@ function _rogue(x,y)
   spr(50, x+16, y+24, 1.0, 1.0, true)
 end
 
-function main_screen_update()
-  if (btnp(0)) main_screen.selected = main_screen.selected - 1
-  if (btnp(1)) main_screen.selected = main_screen.selected + 1
-  if (main_screen.selected > #classes) main_screen.selected = #classes
-  if (main_screen.selected == 0) main_screen.selected = 1
-
-  if (btnp(5)) then
-    next_screen()
-    player.class = classes[main_screen.selected]
-  end
-end
-
-function main_screen_draw()
-  _x = (128/2) - 16
-  _y = (128/2) - 16
-  if (classes[main_screen.selected] == 'paladin') then
-    _paladin(_x,_y)
-  end
-  if (classes[main_screen.selected] == 'warlock') then
-    _warlock(_x,_y)
-  end
-  if (classes[main_screen.selected] == 'rogue') then
-    _rogue(_x,_y)
-  end
-  print(classes[main_screen.selected], 50, 82, 7 )
-  print(main_screen.selected, 0, 0, 7 )
-end
-
 main_screen = {
   selected = 1,
-  draw = main_screen_draw,
-  update = main_screen_update
+  draw = function()
+    _x = (128/2) - 16
+    _y = (128/2) - 16
+    if (classes[main_screen.selected] == 'paladin') then
+      _paladin(_x,_y)
+    end
+    if (classes[main_screen.selected] == 'warlock') then
+      _warlock(_x,_y)
+    end
+    if (classes[main_screen.selected] == 'rogue') then
+      _rogue(_x,_y)
+    end
+    print(classes[main_screen.selected], 50, 82, 7 )
+    print(main_screen.selected, 0, 0, 7 )
+  end,
+  update = function ()
+    if (btnp(0)) main_screen.selected = main_screen.selected - 1
+    if (btnp(1)) main_screen.selected = main_screen.selected + 1
+    if (main_screen.selected > #classes) main_screen.selected = #classes
+    if (main_screen.selected == 0) main_screen.selected = 1
+
+    if (btnp(5)) then
+      next_screen()
+      player.class = classes[main_screen.selected]
+    end
+  end
 }
 
 -- spells module
 
 tooltip = false
-
-function draw_sl()
-  y=0
-  tooltip_y = 0
-  for key, spell in pairs(spells) do
-    y = y+8
-    col = 7
-    if (spell.prepared) then
-      col = 8
-    end
-    if (spell.fav) then
-      print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, 10)
-    else
-      print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, 7)
-    end
-    print(spell.lvl, 8, y+2, col)
-    if (spells[spells_list.selected] == spell) then
-      print(">", 2, y + 2, 7)
-      tooltip_y = y
-    end
-  end
-  if (tooltip) then
-    update_tooltip(spells[spells_list.selected])
-    draw_tooltip(tooltip_y)
-  end
-end
 
 function update_tooltip(spell)
   if (btnp(5)) then
@@ -176,57 +146,75 @@ function draw_tooltip(y)
   print("\152 details", 15, y+22, 0)
 end
 
-function update_sl()
-  if (btnp(0)) then
-    spells[spells_list.selected].casted = spells[spells_list.selected].casted - 1
-    player.spell_slots = player.spell_slots_used - 1
-  end
-  
-  if (btnp(1)) then
-    spells[spells_list.selected].casted = spells[spells_list.selected].casted + 1
-    player.spell_slots_used = player.spell_slots_used + 1
-  end
-
-  if (btnp(2)) spells_list.selected = spells_list.selected - 1
-  if (btnp(3)) spells_list.selected = spells_list.selected + 1
-
-  if (btnp(4)) then
-    tooltip = false
-  end
-  if (btnp(5)) then
-    --spells[spells_list.selected].prepared = not spells[spells_list.selected].prepared
-    tooltip = true
-  end
-end
-
 spells_list = {
   selected = 1,
-  draw = draw_sl,
-  update = update_sl
+  draw = function()
+    y=0
+    tooltip_y = 0
+    for key, spell in pairs(spells) do
+      y = y+8
+      col = 7
+      if (spell.prepared) then
+        col = 8
+      end
+      if (spell.fav) then
+        print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, 10)
+      else
+        print(spell.name .. rep("\143", spell.casted), 6 + 8, y + 2, 7)
+      end
+      print(spell.lvl, 8, y+2, col)
+      if (spells[spells_list.selected] == spell) then
+        print(">", 2, y + 2, 7)
+        tooltip_y = y
+      end
+    end
+    if (tooltip) then
+      update_tooltip(spells[spells_list.selected])
+      draw_tooltip(tooltip_y)
+    end
+  end,
+  update = function()
+    if (btnp(0)) then
+      spells[spells_list.selected].casted = spells[spells_list.selected].casted - 1
+      player.spell_slots = player.spell_slots_used - 1
+    end
+
+    if (btnp(1)) then
+      spells[spells_list.selected].casted = spells[spells_list.selected].casted + 1
+      player.spell_slots_used = player.spell_slots_used + 1
+    end
+
+    if (btnp(2)) spells_list.selected = spells_list.selected - 1
+    if (btnp(3)) spells_list.selected = spells_list.selected + 1
+
+    if (btnp(4)) then
+      tooltip = false
+    end
+    if (btnp(5)) then
+      --spells[spells_list.selected].prepared = not spells[spells_list.selected].prepared
+      tooltip = true
+    end
+  end
 }
 
-function draw_detail()
-  cls(0)
-end
-function update_sd()
-
-end
-
 spell_detail = {
-  draw = draw_detail,
-  update = update_sd
+  draw = function()
+  cls(0)
+  end,
+  update = function()
+  end
 }
 
 -- main game loop module
 
+scrindex = 1
 screens = {
-  selected = 1,
   main_screen,
   spells_list,
   spell_detail
 }
 function next_screen()
-  screens.selected = screens.selected + 1
+  scrindex = scrindex + 1
 end
 
 function _init()
@@ -234,12 +222,12 @@ function _init()
 end
 
 function _update()  
-  screens[screens.selected].update()
+  screens[scrindex].update()
 end
 
 function _draw()
   cls(0)
-  screens[screens.selected].draw()
+  screens[scrindex].draw()
 end
 
 __gfx__
