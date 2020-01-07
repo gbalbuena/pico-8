@@ -129,18 +129,41 @@ main_screen = {
 -- spells module
 
 tooltip = false
+tooltip_opt = 0
+tooltip_details = false
 
 function update_tooltip(spell)
-  if (btnp(5)) then
+  if (tooltip and tooltip_opt == 1 and btnp(5)) then
     spell.fav = not spell.fav
+  end
+  if (tooltip and tooltip_opt == 2 and btnp(5)) then
+    spell.prepared = not spell.prepared
+  end
+  if (tooltip and tooltip_opt == 3 and btnp(5)) then
+    tooltip_details = not tooltip_details
   end
 end
 
-function draw_tooltip(y)
-  rectfill(15,y+10,63,y+28,13)
-  rectfill(14,y+9,62,y+27,6)
+function draw_tooltip(spell, y)
+  if tooltip_opt == 3 then
+    if (tooltip_details) then
+      rectfill(0,0,128,128,0)
+      print(spell.name, 1, 1, 7)
+      print(spell.name, 1, 1, 7)
+      return
+    else
+      rectfill(15,y+10,63,y+28,13)
+      rectfill(14,y+9,62,y+27,6)
+      rectfill(15,y+10+6+6, 61,y+14+6+6,13)
+    end
+  else
+    rectfill(15,y+10,63,y+28,13)
+    rectfill(14,y+9,62,y+27,6)
+  end
 
-  rectfill(15,y+10,61,y+14,13)
+  if (tooltip_opt == 1) rectfill(15,y+10,     61,y+14,    13)
+  if (tooltip_opt == 2) rectfill(15,y+10+6,   61,y+14+6,  13)
+
   print("\146 favourite", 15, y+10, 0)
   print("\143 prepare", 15, y+16, 0)
   print("\152 details", 15, y+22, 0)
@@ -170,7 +193,7 @@ spells_list = {
     end
     if (tooltip) then
       update_tooltip(spells[spells_list.selected])
-      draw_tooltip(tooltip_y)
+      draw_tooltip(spells[spells_list.selected], tooltip_y)
     end
   end,
   update = function()
@@ -184,11 +207,17 @@ spells_list = {
       player.spell_slots_used = player.spell_slots_used + 1
     end
 
-    if (btnp(2)) spells_list.selected = spells_list.selected - 1
-    if (btnp(3)) spells_list.selected = spells_list.selected + 1
+    if (tooltip) then
+      if (btnp(2)) tooltip_opt = tooltip_opt - 1
+      if (btnp(3)) tooltip_opt = tooltip_opt + 1
+    else
+      if (btnp(2)) spells_list.selected = spells_list.selected - 1
+      if (btnp(3)) spells_list.selected = spells_list.selected + 1
+    end
 
     if (btnp(4)) then
       tooltip = false
+      tooltip_opt = 0
     end
     if (btnp(5)) then
       --spells[spells_list.selected].prepared = not spells[spells_list.selected].prepared
@@ -221,7 +250,7 @@ function _init()
   cls(0)
 end
 
-function _update()  
+function _update()
   screens[scrindex].update()
 end
 
